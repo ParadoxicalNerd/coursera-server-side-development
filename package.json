@@ -29,6 +29,6 @@
     "typescript": "^3.9.5"
   },
   "scripts": {
-    "start": "yarn tsc && node build/index.js"
+    "start": "yarn tsc && node build/server.js"
   }
 }
