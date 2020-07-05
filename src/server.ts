@@ -3,6 +3,7 @@ import express, { NextFunction } from 'express'
 import path from 'path'
 import cookieParser from 'cookie-parser'
 import logger from 'morgan'
+import { ErrorWithStatus } from './config/customTypes'
 
 import indexRouter from './routes/index'
 import usersRouter from './routes/users'
@@ -27,14 +28,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Setting up custom types
-interface ErrorWithStatus extends Error {
-    status?: number
-}
-
 // Setting up validation method
-
-// app.use(cookieParser('qwertyuiopasdfghjklzxcvbnm'));
 app.use(session({
     name: 'session-id',
     secret: "qwertyuiopasdfghjklzxcvbnm",
@@ -43,53 +37,33 @@ app.use(session({
     store: new ConnectedFilestore()
 }))
 
+// Globally accessable pages
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
 // Setting up validation
-
-function manulaAuthenticate(req: express.Request, res: express.Response, next: express.NextFunction) {
-
-    if (req.session?.user) {
-        if (req.session.user === 'admin') {
-            next()
-        } else {
-            let error: ErrorWithStatus = new Error('You\'re unauthenticated')
-            error.status = 401
-            next(error)
-        }
-    }
-
-    const authHeader = req.headers.authorization
-    if (!authHeader) {
-        let error: ErrorWithStatus = new Error('You\'re unauthenticated')
-        error.status = 401
-        res.setHeader('WWW-Authenticate', 'Basic')
+function maunualAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+    if (!req.session?.user) {
+        const error: ErrorWithStatus = Error('Authenticate yourself first')
+        error.status = 403
         next(error)
-        return
     } else {
-        let auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':')
-        const username = auth[0]
-        const password = auth[1]
-        if (username === 'admin' && password === 'admin') {
-            // res.cookie('userType', 'admin', { 'signed': true })
-            req.session!.user = 'admin'
+        if (req.session.user == 'authenticated') {
             next()
         } else {
-            let error: ErrorWithStatus = new Error('You\'re unauthenticated')
-            error.status = 401
-            res.setHeader('WWW-Authenticate', 'Basic')
+            const error: ErrorWithStatus = Error('Invalid user')
+            error.status = 403
             next(error)
-            return
         }
     }
 }
 
-app.use(manulaAuthenticate)
+app.use(maunualAuth)
 
 // Static file server
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Pass info to various functions
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/dishes', dishesRouter)
 app.use('/leaders', leadersRouter)
 app.use('/promotions', promotionsRouter)
