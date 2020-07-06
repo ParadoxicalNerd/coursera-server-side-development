@@ -1,6 +1,8 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 
+import { verify } from '../authenticate'
+
 const router = express.Router()
 router.use(bodyParser.json())
 
@@ -24,7 +26,7 @@ router.route('/')
             next(error)
         }
     })
-    .post(async (req, res, next) => {
+    .post(verify, async (req, res, next) => {
         const { document, error } = await LeaderService.createNewLeader(req.body)
         if (!error) {
             res.statusCode = 200
@@ -32,13 +34,12 @@ router.route('/')
         } else {
             next(error)
         }
-
     })
-    .put((req, res, next) => {
+    .put(verify, (req, res, next) => {
         res.statusCode = 403
         res.send({ message: "Operation not supported", })
     })
-    .delete(async (req, res, next) => {
+    .delete(verify, async (req, res, next) => {
         const { document, error } = await LeaderService.deleteAllLeaders()
         if (!error) {
             res.statusCode = 200
@@ -66,11 +67,11 @@ router.route('/:leaderID')
             next(error)
         }
     })
-    .post((req, res, next) => {
+    .post(verify, (req, res, next) => {
         res.status(403)
         res.send({ error: "Cannot create leader this way" })
     })
-    .put(async (req, res, next) => {
+    .put(verify, async (req, res, next) => {
         const { document, error } = await LeaderService.updateOneLeader(req.params.leaderID, req.body)
         if (!error) {
             res.statusCode = 200
@@ -79,7 +80,7 @@ router.route('/:leaderID')
             next(error)
         }
     })
-    .delete(async (req, res, next) => {
+    .delete(verify, async (req, res, next) => {
         const { document, error } = await LeaderService.deleteOneLeader(req.params.leaderID)
         if (!error) {
             res.statusCode = 200

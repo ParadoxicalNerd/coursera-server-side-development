@@ -2,9 +2,10 @@ import express from 'express'
 // import UserService from '../services/users'
 import passport from 'passport'
 import User, { userType } from '../models/users'
-import { ErrorWithStatus } from '../config/customTypes'
+import { ErrorWithStatus } from '../customTypes'
 
 import bodyParser from 'body-parser'
+import { verify, getToken } from '../authenticate'
 let router = express.Router();
 router.use(bodyParser.json())
 
@@ -17,7 +18,7 @@ router.get('/', function (req, res, next) {
 router.post('/signup', (req, res, next) => {
   User.register(new User({ username: req.body.username }), req.body.password, (err: Error, user: userType) => {
     if (err) {
-      res.status(500)
+      res.status(200)
       res.json(err)
     } else {
       passport.authenticate('local')(req, res, () => {
@@ -30,12 +31,14 @@ router.post('/signup', (req, res, next) => {
 
 // Using passport as a middleware
 router.post('/login', passport.authenticate('local'), (req, res) => {
+  console.log(req.user)
+  const token = getToken(req.user)
   res.status(200)
-  res.json({ message: 'Success' })
+  res.json({ message: 'Success', token })
 })
 
 router.get('/logout', (req, res, next) => {
-  console.log(req)
+  // console.log(req)
   if (req.session) {
     // @ts-ignore
     req.session.destroy();

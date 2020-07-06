@@ -1,6 +1,8 @@
 import express from 'express'
 import bodyParser from 'body-parser'
 
+import { verify } from '../authenticate'
+
 const router = express.Router()
 router.use(bodyParser.json())
 
@@ -24,7 +26,7 @@ router.route('/')
             next(error)
         }
     })
-    .post(async (req, res, next) => {
+    .post(verify, async (req, res, next) => {
         const { document, error } = await PromotionService.createNewPromotion(req.body)
         if (!error) {
             res.statusCode = 200
@@ -34,11 +36,11 @@ router.route('/')
         }
 
     })
-    .put((req, res, next) => {
+    .put(verify, (req, res, next) => {
         res.statusCode = 403
         res.send({ message: "Operation not supported", })
     })
-    .delete(async (req, res, next) => {
+    .delete(verify, async (req, res, next) => {
         const { document, error } = await PromotionService.deleteAllPromotions()
         if (!error) {
             res.statusCode = 200
@@ -66,11 +68,11 @@ router.route('/:promotionID')
             next(error)
         }
     })
-    .post((req, res, next) => {
+    .post(verify, (req, res, next) => {
         res.status(403)
         res.send({ error: "Cannot create promotion this way" })
     })
-    .put(async (req, res, next) => {
+    .put(verify, async (req, res, next) => {
         const { document, error } = await PromotionService.updateOnePromotion(req.params.promotionID, req.body)
         if (!error) {
             res.statusCode = 200
@@ -79,7 +81,7 @@ router.route('/:promotionID')
             next(error)
         }
     })
-    .delete(async (req, res, next) => {
+    .delete(verify, async (req, res, next) => {
         const { document, error } = await PromotionService.deleteOnePromotion(req.params.promotionID)
         if (!error) {
             res.statusCode = 200

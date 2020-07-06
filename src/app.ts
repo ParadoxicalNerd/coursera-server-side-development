@@ -3,7 +3,7 @@ import express, { NextFunction } from 'express'
 import path from 'path'
 import cookieParser from 'cookie-parser'
 import logger from 'morgan'
-import { ErrorWithStatus } from './config/customTypes'
+import { ErrorWithStatus } from './customTypes'
 
 import database from './models'; database()
 import session from 'express-session'
@@ -19,7 +19,7 @@ import { Error } from 'mongoose'
 import e from 'express'
 
 import passport from 'passport'
-import authenticate from './authenticate'; authenticate()
+import './authenticate'
 
 var app = express();
 
@@ -34,33 +34,33 @@ app.use(express.urlencoded({ extended: false }));
 
 
 // Setting up validation method
-app.use(session({
-    name: 'session-id',
-    secret: "qwertyuiopasdfghjklzxcvbnm",
-    saveUninitialized: false,
-    resave: false,
-    store: new ConnectedFilestore()
-}))
+// app.use(session({
+//     name: 'session-id',
+//     secret: "qwertyuiopasdfghjklzxcvbnm",
+//     saveUninitialized: false,
+//     resave: false,
+//     store: new ConnectedFilestore()
+// }))
 
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
 // Globally accessable pages
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // Setting up validation
-function maunualAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-    if (!req.user) {
-        const err: ErrorWithStatus = new Error('Authenticate yourself first')
-        err.status = 403
-        next(err)
-    } else {
-        next()
-    }
-}
+// function maunualAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+//     if (!req.user) {
+//         const err: ErrorWithStatus = new Error('Authenticate yourself first')
+//         err.status = 403
+//         next(err)
+//     } else {
+//         next()
+//     }
+// }
 
-app.use(maunualAuth)
+// app.use(maunualAuth)
 
 // Static file server
 app.use(express.static(path.join(__dirname, 'public')));

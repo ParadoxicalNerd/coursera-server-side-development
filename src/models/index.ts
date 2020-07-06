@@ -1,10 +1,9 @@
 import mongose from 'mongoose'
+import config from '../config'
 
 export default async () => {
     try {
-        const dbName = 'coursera'
-        const url = `mongodb+srv://db:db@experimentation-cluster-evmu6.gcp.mongodb.net/${dbName}?retryWrites=true&w=majority`
-        await mongose.connect(url, {
+        await mongose.connect(config.url, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             useFindAndModify: true
