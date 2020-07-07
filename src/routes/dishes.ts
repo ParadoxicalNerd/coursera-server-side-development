@@ -108,6 +108,8 @@ router.route('/:dishID/comments')
         }
     })
     .post(verify, async (req, res, next) => {
+        // @ts-ignore
+        req.body.author = req.user!._id
         const { document, error } = await DishService.createNewComment(req.params.dishID, req.body)
         if (!error) {
             res.statusCode = 200

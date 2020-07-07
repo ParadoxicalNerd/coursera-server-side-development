@@ -1,4 +1,4 @@
-import tsMongoose, { createSchema, typedModel, Type, Extract, ExtractProps, ExtractDoc, ExtractFromReq } from 'ts-mongoose'
+import tsMongoose, { createSchema, typedModel, Type, Extract } from 'ts-mongoose'
 
 const documentName = 'dishes'
 
@@ -11,11 +11,9 @@ const commentSchema = createSchema({
     description: Type.string({
         required: false,
     }),
-    image: Type.string({
-        required: false
-    }),
-    category: Type.string({
-        required: false
+    author: Type.objectId({
+        required: true,
+        ref: 'users'
     })
 }, { timestamps: true });
 
@@ -48,7 +46,7 @@ const dishSchema = createSchema({
     timestamps: true
 });
 
-export default typedModel(documentName, dishSchema)
+export default typedModel(documentName, dishSchema, documentName)
 export type DishesType = Extract<typeof dishSchema>
 // export {DishFunction} = typedModel
 export type a = Extract<typeof typedModel>

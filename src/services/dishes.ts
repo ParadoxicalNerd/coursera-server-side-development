@@ -7,7 +7,9 @@ class DishService {
         let error: any = null
 
         try {
-            document = await Dishes.find({}).exec()
+            const doc = await Dishes.find({}).populate('comments.author').exec()
+            // doc.populate('comments.author').execPopulate()
+            document = doc
         } catch (err) {
             error = err
         }
@@ -16,12 +18,12 @@ class DishService {
     }
 
 
-    async createNewDish(parameters: { name: string, description: string }) {
+    async createNewDish(parameters: object) {
         let document: DishesType | null = null
         let error: any = null
 
         try {
-            document = await Dishes.create({ name: parameters.name, description: parameters.description })
+            document = await Dishes.create(parameters)
         } catch (err) {
             error = err
         }
@@ -47,7 +49,7 @@ class DishService {
         let document: DishesType | null = null
         let error: any = null
         try {
-            document = await Dishes.findById(dishID).exec()
+            document = await Dishes.findById(dishID).populate('comments.author').exec()
             if (!document) {
                 throw { message: 'There is no dish by this ID', code: 404 }
             }
@@ -97,7 +99,7 @@ class DishService {
         let error: any = null
 
         try {
-            let doc = await Dishes.findById(dishID)
+            let doc = await Dishes.findById(dishID).populate('comments.author')
             if (!doc) {
                 throw { message: 'No such document exists', code: 404 }
             } else {
@@ -110,12 +112,12 @@ class DishService {
         return { document, error }
     }
 
-    async createNewComment(dishID: string, parameters: { rating: number, description?: string, image?: string, category?: string }) {
+    async createNewComment(dishID: string, parameters: { rating: number, description?: string, author: any }) {
         let document: DishesType | null = null
         let error: any = null
 
         try {
-            document = await Dishes.findByIdAndUpdate(dishID, { $push: { comments: parameters } }, { new: true })
+            document = await Dishes.findByIdAndUpdate(dishID, { $push: { comments: parameters } }, { new: true }).populate('comments.author')
             if (!document) {
                 throw { message: 'No such document exists', code: 404 }
             }
@@ -159,7 +161,7 @@ class DishService {
         let error: any = null
 
         try {
-            let doc = await Dishes.findById(dishID)
+            let doc = await Dishes.findById(dishID).populate('comments.author')
             if (!doc) {
                 throw { message: 'No such document exists', code: 404 }
             } else {
@@ -176,7 +178,7 @@ class DishService {
         return { document, error }
     }
 
-    async updateOneComment(dishID: string, commentID: string, parameters: { rating: number, description?: string, image?: string, category?: string }) {
+    async updateOneComment(dishID: string, commentID: string, parameters: { rating: number, description?: string, author: any }) {
         let document: any = null
         let error: any = null
 
@@ -189,9 +191,8 @@ class DishService {
                     throw { message: "No such comment", code: 404 }
                 } else {
                     doc.comments.id(commentID).rating = parameters.rating
+                    doc.comments.id(commentID).author = parameters.author
                     if (parameters.description) doc.comments.id(commentID).description = parameters.description
-                    if (parameters.image) doc.comments.id(commentID).image = parameters.image
-                    if (parameters.category) doc.comments.id(commentID).category = parameters.category
                     doc.save()
                     document = doc
                 }

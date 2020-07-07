@@ -1,9 +1,7 @@
 import createError from 'http-errors'
 import express, { NextFunction } from 'express'
 import path from 'path'
-import cookieParser from 'cookie-parser'
 import logger from 'morgan'
-import { ErrorWithStatus } from './customTypes'
 
 import database from './models'; database()
 import session from 'express-session'
@@ -15,8 +13,6 @@ import usersRouter from './routes/users'
 import dishesRouter from './routes/dishes'
 import leadersRouter from './routes/leaders'
 import promotionsRouter from './routes/promotions'
-import { Error } from 'mongoose'
-import e from 'express'
 
 import passport from 'passport'
 import './authenticate'

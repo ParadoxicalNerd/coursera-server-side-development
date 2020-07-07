@@ -5,7 +5,7 @@ import User, { userType } from '../models/users'
 import { ErrorWithStatus } from '../customTypes'
 
 import bodyParser from 'body-parser'
-import { verify, getToken } from '../authenticate'
+import { getToken } from '../authenticate'
 let router = express.Router();
 router.use(bodyParser.json())
 
@@ -21,9 +21,21 @@ router.post('/signup', (req, res, next) => {
       res.status(200)
       res.json(err)
     } else {
-      passport.authenticate('local')(req, res, () => {
-        res.status(200)
-        res.json(user)
+      if (req.body.firstName) user.firstName = req.body.firstName
+      if (req.body.lastName) user.lastName = req.body.lastName
+
+      const save_user: any = user
+      save_user.save((err: any, user: any) => {
+
+        if (err) {
+          res.status(200)
+          res.json(err)
+        }
+
+        passport.authenticate('local')(req, res, () => {
+          res.status(200)
+          res.json(user)
+        })
       })
     }
   })
@@ -31,7 +43,6 @@ router.post('/signup', (req, res, next) => {
 
 // Using passport as a middleware
 router.post('/login', passport.authenticate('local'), (req, res) => {
-  console.log(req.user)
   const token = getToken(req.user)
   res.status(200)
   res.json({ message: 'Success', token })
@@ -40,8 +51,7 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
 router.get('/logout', (req, res, next) => {
   // console.log(req)
   if (req.session) {
-    // @ts-ignore
-    req.session.destroy();
+    req.session.destroy(err => next(err));
     res.clearCookie('session-id');
     res.redirect('/');
   }

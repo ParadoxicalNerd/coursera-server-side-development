@@ -4,6 +4,12 @@ import passportLocalMongoose from 'passport-local-mongoose'
 const documentName = 'users'
 
 const userSchema = createSchema({
+    firstName: Type.string({
+        default: ''
+    }),
+    lastName: Type.string({
+        default: ''
+    }),
     admin: Type.boolean({
         default: false
     })
