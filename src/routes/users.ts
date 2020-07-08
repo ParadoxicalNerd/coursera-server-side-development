@@ -2,7 +2,6 @@ import express from 'express'
 // import UserService from '../services/users'
 import passport from 'passport'
 import User, { userType } from '../models/users'
-import { ErrorWithStatus } from '../customTypes'
 
 import bodyParser from 'body-parser'
 import { getToken } from '../authenticate'
