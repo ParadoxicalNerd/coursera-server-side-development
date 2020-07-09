@@ -13,11 +13,20 @@ import usersRouter from './routes/users'
 import dishesRouter from './routes/dishes'
 import leadersRouter from './routes/leaders'
 import promotionsRouter from './routes/promotions'
+import uploadRouter from './routes/upload'
 
 import passport from 'passport'
 import './authenticate'
 
 var app = express();
+
+app.all('*', (req, res, next) => {
+    if (req.secure) {
+        next()
+    } else {
+        res.redirect('https://' + req.hostname + ':3443' + req.url)
+    }
+})
 
 // view engine 
 app.set('views', path.join(__dirname, '..', 'views'));
@@ -65,6 +74,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/dishes', dishesRouter)
 app.use('/leaders', leadersRouter)
 app.use('/promotions', promotionsRouter)
+app.use('/upload', uploadRouter)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -60,7 +60,7 @@ class DishService {
         return { document, error }
     }
 
-    async updateOneDish(dishID: string, updates: object) {
+    async updateOneDish(userID: object, dishID: string, updates: object) {
         let document: DishesType | null = null
         let error: any = null
 
@@ -178,7 +178,7 @@ class DishService {
         return { document, error }
     }
 
-    async updateOneComment(dishID: string, commentID: string, parameters: { rating: number, description?: string, author: any }) {
+    async updateOneComment(userID: any, dishID: string, commentID: string, parameters: { rating: number, description?: string, author: any }) {
         let document: any = null
         let error: any = null
 
@@ -190,11 +190,15 @@ class DishService {
                 if (!doc.comments || !doc.comments.id(commentID)) {
                     throw { message: "No such comment", code: 404 }
                 } else {
-                    doc.comments.id(commentID).rating = parameters.rating
-                    doc.comments.id(commentID).author = parameters.author
-                    if (parameters.description) doc.comments.id(commentID).description = parameters.description
-                    doc.save()
-                    document = doc
+                    if (doc.comments.id(commentID).author.equals(userID)) {
+                        doc.comments.id(commentID).rating = parameters.rating
+                        doc.comments.id(commentID).author = parameters.author
+                        if (parameters.description) doc.comments.id(commentID).description = parameters.description
+                        doc.save()
+                        document = doc
+                    } else {
+                        throw { message: "Cannot change another user's comment", code: 404 }
+                    }
                 }
             }
         } catch (err) {
@@ -204,7 +208,7 @@ class DishService {
         return { document, error }
     }
 
-    async deleteOneComment(dishID: string, commentID: string) {
+    async deleteOneComment(userID: any, dishID: string, commentID: string) {
         let document: any | null = null
         let error: any = null
 
@@ -216,9 +220,13 @@ class DishService {
                 if (!doc.comments || !doc.comments.id(commentID)) {
                     throw { message: 'No such comment', code: 404 }
                 } else {
-                    doc.comments.id(commentID).remove()
-                    doc.save()
-                    document = doc
+                    if (doc.comments.id(commentID).author.equals(userID)) {
+                        doc.comments.id(commentID).remove()
+                        doc.save()
+                        document = doc
+                    } else {
+                        throw { message: "Cannot delete another user's comment", code: 404 }
+                    }
                 }
             }
         } catch (err) {

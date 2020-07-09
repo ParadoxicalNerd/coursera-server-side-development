@@ -4,14 +4,16 @@ import passport from 'passport'
 import User, { userType } from '../models/users'
 
 import bodyParser from 'body-parser'
-import { getToken } from '../authenticate'
+import { getToken, verifyAdmin, verifyUser } from '../authenticate'
 let router = express.Router();
 router.use(bodyParser.json())
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.statusCode = 200
-  res.send('respond with a resource');
+router.get('/', verifyUser, verifyAdmin, function (req, res, next) {
+  User.find({}).exec().then((val) => {
+    res.statusCode = 200
+    res.send(val);
+  })
 });
 
 router.post('/signup', (req, res, next) => {
