@@ -8,16 +8,18 @@ router.use(bodyParser.json())
 
 
 import LeaderService from '../services/leaders'
+import { corsWhitelisted, cors } from './cors'
 
 // ##########################################################
 //                      Root routing
 // ##########################################################
 router.route('/')
+    .options(corsWhitelisted, (req, res, next) => res.sendStatus(200))
     .all((req, res, next) => {
         res.type('json')
         next()
     })
-    .get(async (req, res, next) => {
+    .get(cors, async (req, res, next) => {
         const { document, error } = await LeaderService.getAllLeaders()
         if (!error) {
             res.statusCode = 200
@@ -26,7 +28,7 @@ router.route('/')
             next(error)
         }
     })
-    .post(verifyUser, verifyAdmin, async (req, res, next) => {
+    .post(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await LeaderService.createNewLeader(req.body)
         if (!error) {
             res.statusCode = 200
@@ -35,11 +37,11 @@ router.route('/')
             next(error)
         }
     })
-    .put(verifyUser, verifyAdmin, (req, res, next) => {
+    .put(corsWhitelisted, verifyUser, verifyAdmin, (req, res, next) => {
         res.statusCode = 403
         res.send({ message: "Operation not supported", })
     })
-    .delete(verifyUser, verifyAdmin, async (req, res, next) => {
+    .delete(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await LeaderService.deleteAllLeaders()
         if (!error) {
             res.statusCode = 200
@@ -58,7 +60,7 @@ router.route('/:leaderID')
         res.type('json')
         next()
     })
-    .get(async (req, res, next) => {
+    .get(cors, async (req, res, next) => {
         const { document, error } = await LeaderService.getOneLeader(req.params.leaderID)
         if (!error) {
             res.statusCode = 200
@@ -67,11 +69,11 @@ router.route('/:leaderID')
             next(error)
         }
     })
-    .post(verifyUser, verifyAdmin, (req, res, next) => {
+    .post(corsWhitelisted, verifyUser, verifyAdmin, (req, res, next) => {
         res.status(403)
         res.send({ error: "Cannot create leader this way" })
     })
-    .put(verifyUser, verifyAdmin, async (req, res, next) => {
+    .put(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await LeaderService.updateOneLeader(req.params.leaderID, req.body)
         if (!error) {
             res.statusCode = 200
@@ -80,7 +82,7 @@ router.route('/:leaderID')
             next(error)
         }
     })
-    .delete(verifyUser, verifyAdmin, async (req, res, next) => {
+    .delete(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await LeaderService.deleteOneLeader(req.params.leaderID)
         if (!error) {
             res.statusCode = 200

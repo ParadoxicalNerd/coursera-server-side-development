@@ -49,6 +49,16 @@ router.post('/login', passport.authenticate('local'), (req, res) => {
   res.json({ message: 'Success', token })
 })
 
+router.get('/google', passport.authenticate('google', {
+  scope: ['profile']
+}))
+
+router.get('/google/redirect', passport.authenticate('google'), (req, res) => {
+  const token = getToken(req.user)
+  res.status(200)
+  res.json({ message: 'Success', token, user: req.user })
+})
+
 router.get('/logout', (req, res, next) => {
   // console.log(req)
   if (req.session) {

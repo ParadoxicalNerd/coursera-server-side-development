@@ -2,6 +2,7 @@ import passport from 'passport'
 import { Strategy as LocalStrategy } from 'passport-local'
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt'
 import jwt from 'jsonwebtoken'
+import { Strategy as GoogleStrategy, StrategyOptions as googleStrategyOptions } from 'passport-google-oauth20'
 
 import User from './models/users'
 import config from './config'
@@ -18,12 +19,12 @@ export const getToken = (user: any) => {
     })
 }
 
-const opts = {
+const jwtOpts = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: config.secretKey
 }
 
-export const jwtPassport = passport.use(new JwtStrategy(opts, async (payload, done) => {
+export const jwtPassport = passport.use(new JwtStrategy(jwtOpts, async (payload, done) => {
     try {
         const res = await User.findById(payload._id)
         if (res) {
@@ -51,3 +52,32 @@ export const verifyAdmin = (req: Express.Request, res: Express.Response, next: N
         }, err => next(err)
     ).catch(err => next(err))
 }
+
+const googleOpts: googleStrategyOptions = {
+    clientID: config.google.clientID,
+    clientSecret: config.google.clientSecret,
+    callbackURL: '/users/google/redirect'
+}
+export const googlePassport = passport.use(new GoogleStrategy(googleOpts, (accessToken, refreshToken, profile, callback) => {
+    User.findOne({ googleId: profile.id }).exec()
+        .then(
+            (user) => {
+                if (user) {
+                    return callback(undefined, user)
+                } else {
+                    user = new User({ username: profile.displayName })
+                    user.googleId = profile.id
+                    user.firstName = profile.name?.givenName
+                    user.firstName = profile.name?.familyName
+                    user.save((err, user) => {
+                        if (err) {
+                            return callback(err)
+                        } else {
+                            return callback(undefined, user)
+                        }
+                    })
+                }
+            }
+        )
+        .catch(err => callback(err))
+}))

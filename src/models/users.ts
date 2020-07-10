@@ -10,6 +10,7 @@ const userSchema = createSchema({
     lastName: Type.string({
         default: ''
     }),
+    googleId: Type.string(),
     admin: Type.boolean({
         default: false
     })

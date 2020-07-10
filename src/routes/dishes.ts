@@ -7,6 +7,7 @@ router.use(bodyParser.json())
 
 
 import DishService from '../services/dishes'
+import { corsWhitelisted, cors } from './cors'
 
 // ##########################################################
 //                      Root routing
@@ -16,7 +17,9 @@ router.route('/')
         res.type('json')
         next()
     })
-    .get(async (req, res, next) => {
+
+    .options(corsWhitelisted, (req, res, next) => res.sendStatus(200))
+    .get(cors, async (req, res, next) => {
         const { document, error } = await DishService.getAllDishes()
         if (!error) {
             res.statusCode = 200
@@ -25,7 +28,8 @@ router.route('/')
             next(error)
         }
     })
-    .post(verifyUser, verifyAdmin, async (req, res, next) => {
+
+    .post(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await DishService.createNewDish(req.body)
         if (!error) {
             res.statusCode = 200
@@ -35,11 +39,11 @@ router.route('/')
         }
 
     })
-    .put(verifyUser, verifyAdmin, (req, res, next) => {
+    .put(corsWhitelisted, verifyUser, verifyAdmin, (req, res, next) => {
         res.statusCode = 403
         res.send({ message: "Operation not supported", })
     })
-    .delete(verifyUser, verifyAdmin, async (req, res, next) => {
+    .delete(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await DishService.deleteAllDishes()
         if (!error) {
             res.statusCode = 200
@@ -58,7 +62,8 @@ router.route('/:dishID')
         res.type('json')
         next()
     })
-    .get(async (req, res, next) => {
+    .options(corsWhitelisted, (req, res, next) => res.sendStatus(200))
+    .get(cors, async (req, res, next) => {
         const { document, error } = await DishService.getOneDish(req.params.dishID)
         if (!error) {
             res.statusCode = 200
@@ -67,11 +72,11 @@ router.route('/:dishID')
             next(error)
         }
     })
-    .post(verifyUser, verifyAdmin, (req, res, next) => {
+    .post(corsWhitelisted, verifyUser, verifyAdmin, (req, res, next) => {
         res.status(403)
         res.send({ error: "Cannot create dish this way" })
     })
-    .put(verifyUser, verifyAdmin, async (req, res, next) => {
+    .put(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await DishService.updateOneDish(req.user._id, req.params.dishID, req.body)
         if (!error) {
             res.statusCode = 200
@@ -80,7 +85,7 @@ router.route('/:dishID')
             next(error)
         }
     })
-    .delete(verifyUser, verifyAdmin, async (req, res, next) => {
+    .delete(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await DishService.deleteOneDish(req.params.dishID)
         if (!error) {
             res.statusCode = 200
@@ -98,7 +103,8 @@ router.route('/:dishID/comments')
         res.type('text')
         next()
     })
-    .get(async (req, res, next) => {
+    .options(corsWhitelisted, (req, res, next) => res.sendStatus(200))
+    .get(cors, async (req, res, next) => {
         const { document, error } = await DishService.getAllComments(req.params.dishID)
         if (!error) {
             res.statusCode = 200
@@ -107,7 +113,7 @@ router.route('/:dishID/comments')
             next(error)
         }
     })
-    .post(verifyUser, async (req, res, next) => {
+    .post(corsWhitelisted, verifyUser, async (req, res, next) => {
         req.body.author = req.user._id
         const { document, error } = await DishService.createNewComment(req.params.dishID, req.body)
         if (!error) {
@@ -117,11 +123,11 @@ router.route('/:dishID/comments')
             next(error)
         }
     })
-    .put(verifyUser, (req, res, next) => {
+    .put(corsWhitelisted, verifyUser, (req, res, next) => {
         res.statusCode = 400
         res.send('Impossible request')
     })
-    .delete(verifyUser, verifyAdmin, async (req, res, next) => {
+    .delete(corsWhitelisted, verifyUser, verifyAdmin, async (req, res, next) => {
         const { document, error } = await DishService.deleteAllComments(req.params.dishID)
         if (!error) {
             res.statusCode = 200
@@ -140,7 +146,8 @@ router.route('/:dishID/comments/:commentID')
         res.type('text')
         next()
     })
-    .get(async (req, res, next) => {
+    .options(corsWhitelisted, (req, res, next) => res.sendStatus(200))
+    .get(cors, async (req, res, next) => {
         const { document, error } = await DishService.getOneComment(req.params.dishID, req.params.commentID)
         if (!error) {
             res.statusCode = 200
@@ -149,11 +156,11 @@ router.route('/:dishID/comments/:commentID')
             next(error)
         }
     })
-    .post(verifyUser, (req, res, next) => {
+    .post(corsWhitelisted, verifyUser, (req, res, next) => {
         res.status(400)
         res.send("Can't set name this way")
     })
-    .put(verifyUser, async (req, res, next) => {
+    .put(corsWhitelisted, verifyUser, async (req, res, next) => {
         req.body.author = req.user._id
         const { document, error } = await DishService.updateOneComment(req.user._id, req.params.dishID, req.params.commentID, req.body)
         if (!error) {
@@ -163,7 +170,7 @@ router.route('/:dishID/comments/:commentID')
             next(error)
         }
     })
-    .delete(verifyUser, async (req, res, next) => {
+    .delete(corsWhitelisted, verifyUser, async (req, res, next) => {
         req.body.author = req.user._id
         const { document, error } = await DishService.deleteOneComment(req.user._id, req.params.dishID, req.params.commentID)
         if (!error) {
